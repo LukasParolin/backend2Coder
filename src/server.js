@@ -11,6 +11,7 @@ const { initializePassport } = require('./config/passport.config');
 // Importar rutas
 const userRoutes = require('./routes/user.routes');
 const sessionRoutes = require('./routes/session.routes');
+const productRoutes = require('./routes/product.routes');
 
 const app = express();
 const PORT = process.env.PORT || 8080;
@@ -21,6 +22,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 app.use(cookieParser());
 app.use(morgan('dev'));
+app.use(express.static('public'));
 
 // Inicializar Passport
 initializePassport();
@@ -29,6 +31,7 @@ app.use(passport.initialize());
 // Rutas
 app.use('/api/users', userRoutes);
 app.use('/api/sessions', sessionRoutes);
+app.use('/api/products', productRoutes);
 
 // Ruta principal
 app.get('/', (req, res) => {
