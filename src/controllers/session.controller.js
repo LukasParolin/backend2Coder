@@ -1,5 +1,4 @@
 const jwt = require('jsonwebtoken');
-const passport = require('passport');
 const { AppError } = require('../middlewares/errorHandler');
 
 // Generar un token JWT
@@ -19,35 +18,28 @@ const generateToken = (user) => {
   return token;
 };
 
-// Login de usuario
-const login = (req, res, next) => {
-  passport.authenticate('login', { session: false }, (err, user, info) => {
-    if (err) {
-      return next(err);
+// Login de usuario - simplificado para usar con middleware de Passport
+const login = (req, res) => {
+  // El usuario viene del middleware de autenticación de Passport
+  const user = req.user;
+  
+  // Generar token JWT
+  const token = generateToken(user);
+  
+  // Enviar respuesta
+  res.status(200).json({
+    status: 'success',
+    data: {
+      user: {
+        id: user._id,
+        first_name: user.first_name,
+        last_name: user.last_name,
+        email: user.email,
+        role: user.role
+      },
+      token
     }
-    
-    if (!user) {
-      return next(new AppError('Credenciales inválidas', 401));
-    }
-    
-    // Generar token JWT
-    const token = generateToken(user);
-    
-    // Enviar respuesta
-    res.status(200).json({
-      status: 'success',
-      data: {
-        user: {
-          id: user._id,
-          first_name: user.first_name,
-          last_name: user.last_name,
-          email: user.email,
-          role: user.role
-        },
-        token
-      }
-    });
-  })(req, res, next);
+  });
 };
 
 // Obtener información del usuario actual
@@ -55,7 +47,13 @@ const getCurrentUser = (req, res) => {
   res.status(200).json({
     status: 'success',
     data: {
-      user: req.user
+      user: {
+        id: req.user._id,
+        first_name: req.user.first_name,
+        last_name: req.user.last_name,
+        email: req.user.email,
+        role: req.user.role
+      }
     }
   });
 };

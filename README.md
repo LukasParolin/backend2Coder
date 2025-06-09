@@ -69,13 +69,17 @@ El proyecto implementa un sistema de autenticación y autorización completo con
 - **Seguridad**: La contraseña se almacena encriptada usando bcrypt.hashSync
 - **Validación**: Incluye validaciones para correo electrónico y edad
 
-### Estrategias de Passport
+### Estrategias de Passport como Middlewares
 
-- **LocalStrategy**: Para la autenticación con email y contraseña
-- **JWTStrategy**: Para la autenticación con token JWT
+- **LocalStrategy**: Implementada como middleware `authenticateLocal` para la autenticación con email y contraseña
+- **JWTStrategy**: Implementada como middleware `authenticateJWT` para la autenticación con token JWT
+- **Middlewares de autorización**:
+  - `authorizeAdmin`: Solo permite acceso a administradores
+  - `authorizeUser`: Permite acceso a usuarios autenticados (user y admin)
+  - `authorizeRole(roles)`: Permite especificar roles personalizados
 - **Endpoints de autenticación**:
-  - Login: Genera token JWT
-  - Current: Obtiene datos del usuario actual
+  - Login: Usa `authenticateLocal` middleware y genera token JWT
+  - Current: Usa `authenticateJWT` middleware y obtiene datos del usuario actual
   - Logout: Cierra la sesión (se elimina el token en el cliente)
 
 ### Gestión de Tokens JWT
@@ -89,6 +93,14 @@ El proyecto implementa un sistema de autenticación y autorización completo con
 - **Roles disponibles**: user, admin
 - **Middleware de autorización**: Permite restringir rutas según el rol del usuario
 - **Protección de rutas**: Las rutas críticas requieren autenticación mediante JWT
+
+### Mejores Prácticas Implementadas
+
+- **Middlewares de Passport**: Las estrategias se implementan como middlewares reutilizables
+- **Separación de responsabilidades**: La autenticación se separa de la lógica de negocio
+- **Middlewares específicos**: Se crean middlewares específicos para diferentes niveles de autorización
+- **Composición de middlewares**: Los middlewares se pueden combinar fácilmente en las rutas
+- **Manejo de errores consistente**: Todos los middlewares usan el mismo sistema de manejo de errores
 
 ## Rutas de la API
 
