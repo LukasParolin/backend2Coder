@@ -12,6 +12,7 @@ const { initializePassport } = require('./config/passport.config');
 const userRoutes = require('./routes/user.routes');
 const sessionRoutes = require('./routes/session.routes');
 const productRoutes = require('./routes/product.routes');
+const cartRoutes = require('./routes/cart.routes');
 
 const app = express();
 const PORT = process.env.PORT || 8080;
@@ -32,10 +33,24 @@ app.use(passport.initialize());
 app.use('/api/users', userRoutes);
 app.use('/api/sessions', sessionRoutes);
 app.use('/api/products', productRoutes);
+app.use('/api/carts', cartRoutes);
 
 // Ruta principal
 app.get('/', (req, res) => {
-  res.json({ message: 'API de Ecommerce funcionando correctamente' });
+  res.json({ 
+    message: 'API de Ecommerce funcionando correctamente',
+    version: '2.0.0',
+    features: [
+      'Autenticación JWT con Passport',
+      'Sistema de roles (user/admin)',
+      'Recuperación de contraseña por email',
+      'Carrito de compras',
+      'Sistema de tickets',
+      'Arquitectura con Repository Pattern',
+      'DTOs para transferencia de datos',
+      'Middleware de autorización avanzado'
+    ]
+  });
 });
 
 // Middleware de manejo de errores
@@ -43,6 +58,7 @@ app.use(errorHandler);
 
 // Iniciar servidor
 app.listen(PORT, async () => {
-  console.log(`Servidor escuchando en el puerto ${PORT}`);
+  console.log(`🚀 Servidor escuchando en el puerto ${PORT}`);
+  console.log(`📱 Ambiente: ${process.env.NODE_ENV || 'development'}`);
   await connectDB();
 }); 

@@ -30,6 +30,10 @@ const userSchema = new mongoose.Schema({
     required: true,
     select: false
   },
+  previousPassword: {
+    type: String,
+    select: false
+  },
   cart: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Cart'
@@ -38,6 +42,14 @@ const userSchema = new mongoose.Schema({
     type: String,
     enum: ['user', 'admin'],
     default: 'user'
+  },
+  resetPasswordToken: {
+    type: String,
+    select: false
+  },
+  resetPasswordExpires: {
+    type: Date,
+    select: false
   }
 }, {
   timestamps: true
@@ -46,6 +58,12 @@ const userSchema = new mongoose.Schema({
 // Método para validar la contraseña
 userSchema.methods.isValidPassword = async function(password) {
   return await bcrypt.compare(password, this.password);
+};
+
+// Método para verificar si la nueva contraseña es igual a la anterior
+userSchema.methods.isSamePassword = async function(password) {
+  if (!this.previousPassword) return false;
+  return await bcrypt.compare(password, this.previousPassword);
 };
 
 const User = mongoose.model('User', userSchema);

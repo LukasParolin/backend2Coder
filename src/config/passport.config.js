@@ -2,10 +2,12 @@ const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const JwtStrategy = require('passport-jwt').Strategy;
 const ExtractJwt = require('passport-jwt').ExtractJwt;
-const User = require('../models/user.model');
+const UserRepository = require('../repositories/user.repository');
 const { AppError } = require('../middlewares/errorHandler');
 
 const initializePassport = () => {
+  const userRepository = new UserRepository();
+
   // Estrategia Local
   passport.use(
     'login',
@@ -17,7 +19,7 @@ const initializePassport = () => {
       async (email, password, done) => {
         try {
           // Buscar el usuario por email y traer la contraseña
-          const user = await User.findOne({ email }).select('+password');
+          const user = await userRepository.getUserForLogin(email);
 
           if (!user) {
             return done(new AppError('Usuario no encontrado', 404), false);
@@ -46,9 +48,28 @@ const initializePassport = () => {
   };
 
   passport.use(
+    'jwt',
     new JwtStrategy(jwtOptions, async (jwtPayload, done) => {
       try {
-        const user = await User.findById(jwtPayload.id);
+        const user = await userRepository.getUserById(jwtPayload.id);
+
+        if (!user) {
+          return done(null, false);
+        }
+
+        return done(null, user);
+      } catch (error) {
+        return done(error, false);
+      }
+    })
+  );
+
+  // Estrategia current - misma que JWT pero con nombre específico
+  passport.use(
+    'current',
+    new JwtStrategy(jwtOptions, async (jwtPayload, done) => {
+      try {
+        const user = await userRepository.getUserById(jwtPayload.id);
 
         if (!user) {
           return done(null, false);

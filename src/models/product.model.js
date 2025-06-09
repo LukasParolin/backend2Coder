@@ -16,20 +16,30 @@ const productSchema = new mongoose.Schema({
     required: true,
     min: 0
   },
+  thumbnail: {
+    type: [String],
+    default: ['https://via.placeholder.com/150']
+  },
+  code: {
+    type: String,
+    required: true,
+    unique: true,
+    trim: true
+  },
   stock: {
     type: Number,
     required: true,
     min: 0,
     default: 0
   },
+  status: {
+    type: Boolean,
+    default: true
+  },
   category: {
     type: String,
     required: true,
     trim: true
-  },
-  image: {
-    type: String,
-    default: 'https://via.placeholder.com/150'
   }
 }, {
   timestamps: true

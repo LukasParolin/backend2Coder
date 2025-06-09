@@ -1,10 +1,13 @@
 const jwt = require('jsonwebtoken');
+const AuthService = require('../services/auth.service');
+const UserRepository = require('../repositories/user.repository');
+const { UserPublicDTO } = require('../dto/user.dto');
 const { AppError } = require('../middlewares/errorHandler');
 
 // Generar un token JWT
 const generateToken = (user) => {
   const payload = {
-    id: user._id,
+    id: user._id || user.id,
     email: user.email,
     role: user.role
   };
@@ -26,34 +29,26 @@ const login = (req, res) => {
   // Generar token JWT
   const token = generateToken(user);
   
-  // Enviar respuesta
+  // Enviar respuesta con DTO público
+  const userDTO = UserPublicDTO.fromUser(user);
+  
   res.status(200).json({
     status: 'success',
     data: {
-      user: {
-        id: user._id,
-        first_name: user.first_name,
-        last_name: user.last_name,
-        email: user.email,
-        role: user.role
-      },
+      user: userDTO,
       token
     }
   });
 };
 
-// Obtener información del usuario actual
+// Obtener información del usuario actual usando DTO
 const getCurrentUser = (req, res) => {
+  const userDTO = UserPublicDTO.fromUser(req.user);
+  
   res.status(200).json({
     status: 'success',
     data: {
-      user: {
-        id: req.user._id,
-        first_name: req.user.first_name,
-        last_name: req.user.last_name,
-        email: req.user.email,
-        role: req.user.role
-      }
+      user: userDTO
     }
   });
 };
@@ -66,8 +61,71 @@ const logout = (req, res) => {
   });
 };
 
+// Solicitar reset de contraseña
+const requestPasswordReset = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+    
+    if (!email) {
+      return next(new AppError('El email es requerido', 400));
+    }
+
+    const authService = new AuthService();
+    const result = await authService.requestPasswordReset(email);
+
+    res.status(200).json({
+      status: 'success',
+      data: result
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Validar token de reset
+const validateResetToken = async (req, res, next) => {
+  try {
+    const { token } = req.params;
+    
+    const authService = new AuthService();
+    const result = await authService.validateResetToken(token);
+
+    res.status(200).json({
+      status: 'success',
+      data: result
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Reset de contraseña
+const resetPassword = async (req, res, next) => {
+  try {
+    const { token } = req.params;
+    const { password } = req.body;
+    
+    if (!password) {
+      return next(new AppError('La nueva contraseña es requerida', 400));
+    }
+
+    const authService = new AuthService();
+    const result = await authService.resetPassword(token, password);
+
+    res.status(200).json({
+      status: 'success',
+      data: result
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   login,
   getCurrentUser,
-  logout
+  logout,
+  requestPasswordReset,
+  validateResetToken,
+  resetPassword
 }; 

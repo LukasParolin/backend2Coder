@@ -1,13 +1,24 @@
-# API de Ecommerce con Node.js, Express y MongoDB
+# API de Ecommerce con Arquitectura Profesional
 
-API Backend para un sistema de ecommerce con autenticación JWT y MongoDB.
+API Backend completa para un sistema de ecommerce con autenticación JWT, sistema de roles, carrito de compras, procesamiento de tickets y arquitectura basada en patrones de diseño profesionales.
 
-## Requisitos
+## 🚀 Características Principales
+
+- **Autenticación y Autorización**: JWT con Passport.js y sistema de roles
+- **Recuperación de Contraseña**: Sistema completo con envío de emails
+- **Carrito de Compras**: Gestión completa con verificación de stock
+- **Sistema de Tickets**: Procesamiento de compras con generación automática
+- **Arquitectura Profesional**: Repository Pattern, DAOs, DTOs y Services
+- **Seguridad Avanzada**: Middleware de autorización específico por rol
+- **Notificaciones por Email**: Sistema completo de mailing
+
+## 📋 Requisitos
 
 - Node.js (v14 o superior)
 - MongoDB
+- Cuenta de Gmail para envío de emails
 
-## Instalación
+## 🛠️ Instalación
 
 1. Clonar el repositorio
 2. Instalar dependencias:
@@ -16,16 +27,30 @@ API Backend para un sistema de ecommerce con autenticación JWT y MongoDB.
 npm install
 ```
 
-3. Crear un archivo `.env` en la raíz del proyecto con las siguientes variables:
+3. Crear un archivo `.env` en la raíz del proyecto:
 
-```
+```env
+# Configuración del servidor
 PORT=8080
+NODE_ENV=development
+
+# Configuración de la base de datos
 MONGODB_URI=mongodb://localhost:27017/ecommerce
-JWT_SECRET=your_secret_key
+
+# Configuración JWT
+JWT_SECRET=mi_super_secreto_jwt_para_desarrollo_2024
 JWT_EXPIRES_IN=24h
+
+# Configuración de Email
+EMAIL_USER=tu_email@gmail.com
+EMAIL_PASSWORD=tu_password_de_aplicacion
+CLIENT_URL=http://localhost:3000
+
+# Configuración de reset de contraseña
+RESET_TOKEN_EXPIRES=3600000
 ```
 
-## Ejecución
+## 🚀 Ejecución
 
 ```bash
 # Modo desarrollo
@@ -35,102 +60,210 @@ npm run dev
 npm start
 ```
 
-## Características
-
-- Autenticación con JWT (JSON Web Tokens)
-- Sistema de roles (user, admin)
-- CRUD completo de usuarios
-- Middleware de manejo de errores
-- Conexión a MongoDB
-
-## Estructura del Proyecto
+## 🏗️ Arquitectura del Proyecto
 
 ```
 ├── src/
 │   ├── config/           # Configuraciones (DB, Passport)
-│   ├── controllers/      # Controladores
-│   ├── middlewares/      # Middlewares personalizados
-│   ├── models/           # Modelos de datos (Mongoose)
-│   ├── routes/           # Rutas de la API
-│   └── server.js         # Punto de entrada de la aplicación
-├── .env                  # Variables de entorno
+│   ├── controllers/      # Controladores de rutas
+│   ├── dao/             # Data Access Objects
+│   ├── dto/             # Data Transfer Objects
+│   ├── middlewares/     # Middlewares personalizados
+│   ├── models/          # Modelos de datos (Mongoose)
+│   ├── repositories/    # Repository Pattern
+│   ├── routes/          # Rutas de la API
+│   ├── services/        # Lógica de negocio
+│   ├── utils/           # Utilidades
+│   └── server.js        # Punto de entrada
+├── .env                 # Variables de entorno
 ├── .gitignore
 ├── package.json
 └── README.md
 ```
 
-## Sistema de Autenticación y Autorización
-
-El proyecto implementa un sistema de autenticación y autorización completo con las siguientes características:
+## 🔐 Sistema de Autenticación y Autorización
 
 ### Modelo de Usuario
 
-- **Campos del usuario**: first_name, last_name, email, age, password, cart, role
-- **Seguridad**: La contraseña se almacena encriptada usando bcrypt.hashSync
-- **Validación**: Incluye validaciones para correo electrónico y edad
+- **Campos**: first_name, last_name, email, age, password, cart, role
+- **Seguridad**: Contraseñas encriptadas con bcrypt
+- **Validaciones**: Email único, edad mínima, formato de email
+- **Reset de contraseña**: Tokens seguros con expiración
 
 ### Estrategias de Passport como Middlewares
 
-- **LocalStrategy**: Implementada como middleware `authenticateLocal` para la autenticación con email y contraseña
-- **JWTStrategy**: Implementada como middleware `authenticateJWT` para la autenticación con token JWT
+- **`authenticateLocal`**: Para login con email/contraseña
+- **`authenticateJWT`**: Para autenticación con token JWT
+- **`authenticateCurrent`**: Estrategia específica para /current
 - **Middlewares de autorización**:
-  - `authorizeAdmin`: Solo permite acceso a administradores
-  - `authorizeUser`: Permite acceso a usuarios autenticados (user y admin)
-  - `authorizeRole(roles)`: Permite especificar roles personalizados
-- **Endpoints de autenticación**:
-  - Login: Usa `authenticateLocal` middleware y genera token JWT
-  - Current: Usa `authenticateJWT` middleware y obtiene datos del usuario actual
-  - Logout: Cierra la sesión (se elimina el token en el cliente)
+  - `authorizeAdmin`: Solo administradores
+  - `authorizeUser`: Usuarios autenticados (user + admin)
+  - `authorizeOwnerOrAdmin`: Propietario del recurso o admin
 
 ### Gestión de Tokens JWT
 
-- **Generación**: El token incluye id, email y role del usuario
-- **Expiración**: Configurable mediante variable de entorno (default: 24h)
-- **Almacenamiento**: El token se envía al cliente y debe incluirse en los headers de las peticiones
+- **Generación**: Incluye id, email y role del usuario
+- **Expiración**: Configurable (default: 24h)
+- **Seguridad**: Secret key configurable por ambiente
 
-### Autorización basada en roles
+## 📧 Sistema de Recuperación de Contraseña
 
-- **Roles disponibles**: user, admin
-- **Middleware de autorización**: Permite restringir rutas según el rol del usuario
-- **Protección de rutas**: Las rutas críticas requieren autenticación mediante JWT
+- **Solicitud**: POST `/api/sessions/forgot-password`
+- **Validación**: GET `/api/sessions/reset-password/:token`
+- **Reset**: POST `/api/sessions/reset-password/:token`
+- **Seguridad**: 
+  - Tokens únicos con expiración de 1 hora
+  - Prevención de reutilización de contraseñas anteriores
+  - Emails HTML con botones de acción
 
-### Mejores Prácticas Implementadas
+## 🛒 Sistema de Carrito y Compras
 
-- **Middlewares de Passport**: Las estrategias se implementan como middlewares reutilizables
-- **Separación de responsabilidades**: La autenticación se separa de la lógica de negocio
-- **Middlewares específicos**: Se crean middlewares específicos para diferentes niveles de autorización
-- **Composición de middlewares**: Los middlewares se pueden combinar fácilmente en las rutas
-- **Manejo de errores consistente**: Todos los middlewares usan el mismo sistema de manejo de errores
+### Gestión del Carrito
 
-## Rutas de la API
+- **Ver carrito**: GET `/api/carts/:cid`
+- **Agregar producto**: POST `/api/carts/:cid/products/:pid`
+- **Eliminar producto**: DELETE `/api/carts/:cid/products/:pid`
+- **Limpiar carrito**: DELETE `/api/carts/:cid`
 
-### Usuarios
+### Procesamiento de Compras
 
-- `POST /api/users`: Crear un nuevo usuario
-- `GET /api/users`: Obtener todos los usuarios (admin)
-- `GET /api/users/:id`: Obtener un usuario por ID
-- `PUT /api/users/:id`: Actualizar un usuario
-- `DELETE /api/users/:id`: Eliminar un usuario (admin)
+- **Procesar compra**: POST `/api/carts/:cid/purchase`
+- **Verificación de stock**: Automática antes de procesar
+- **Compras parciales**: Manejo de productos sin stock
+- **Generación de tickets**: Automática con código único
+
+### Sistema de Tickets
+
+- **Campos**: code, purchase_datetime, amount, purchaser, products, status
+- **Estados**: pending, completed, failed
+- **Consultas**:
+  - Tickets del usuario: GET `/api/carts/tickets/user`
+  - Ticket por código: GET `/api/carts/tickets/:code`
+  - Todos los tickets (admin): GET `/api/carts/tickets`
+
+## 🏛️ Patrones de Diseño Implementados
+
+### Repository Pattern
+
+Separa la lógica de acceso a datos de la lógica de negocio:
+
+```javascript
+// UserRepository maneja toda la lógica de negocio de usuarios
+const userRepository = new UserRepository();
+const user = await userRepository.getUserById(id);
+```
+
+### DAO (Data Access Object)
+
+Encapsula el acceso directo a la base de datos:
+
+```javascript
+// UserDAO maneja solo las operaciones de base de datos
+const userDAO = new UserDAO();
+const user = await userDAO.findById(id);
+```
+
+### DTO (Data Transfer Object)
+
+Controla qué datos se envían al cliente:
+
+```javascript
+// Solo información no sensible
+const userDTO = UserPublicDTO.fromUser(user);
+```
+
+### Service Layer
+
+Contiene la lógica de negocio compleja:
+
+```javascript
+// PurchaseService maneja toda la lógica de compras
+const purchaseService = new PurchaseService();
+const result = await purchaseService.processPurchase(cartId, email);
+```
+
+## 📡 API Endpoints
 
 ### Autenticación
 
-- `POST /api/sessions/login`: Iniciar sesión
-- `GET /api/sessions/current`: Obtener usuario actual
-- `POST /api/sessions/logout`: Cerrar sesión
+| Método | Endpoint | Descripción | Autorización |
+|--------|----------|-------------|--------------|
+| POST | `/api/sessions/login` | Iniciar sesión | Público |
+| GET | `/api/sessions/current` | Usuario actual | JWT |
+| POST | `/api/sessions/logout` | Cerrar sesión | Público |
+| POST | `/api/sessions/forgot-password` | Solicitar reset | Público |
+| GET | `/api/sessions/reset-password/:token` | Validar token | Público |
+| POST | `/api/sessions/reset-password/:token` | Reset contraseña | Público |
+
+### Usuarios
+
+| Método | Endpoint | Descripción | Autorización |
+|--------|----------|-------------|--------------|
+| POST | `/api/users` | Crear usuario | Público |
+| GET | `/api/users` | Listar usuarios | Admin |
+| GET | `/api/users/:id` | Ver usuario | Propietario/Admin |
+| PUT | `/api/users/:id` | Actualizar usuario | Propietario/Admin |
+| DELETE | `/api/users/:id` | Eliminar usuario | Admin |
 
 ### Productos
 
-- `GET /api/products`: Obtener todos los productos
-- `GET /api/products/:id`: Obtener un producto por ID
-- `POST /api/products`: Crear un nuevo producto (admin)
-- `PUT /api/products/:id`: Actualizar un producto (admin)
-- `DELETE /api/products/:id`: Eliminar un producto (admin)
+| Método | Endpoint | Descripción | Autorización |
+|--------|----------|-------------|--------------|
+| GET | `/api/products` | Listar productos | Público |
+| GET | `/api/products/:id` | Ver producto | Público |
+| POST | `/api/products` | Crear producto | Admin |
+| PUT | `/api/products/:id` | Actualizar producto | Admin |
+| DELETE | `/api/products/:id` | Eliminar producto | Admin |
 
-## Ejemplo de Uso
+### Carrito y Compras
 
-### Crear un Usuario
+| Método | Endpoint | Descripción | Autorización |
+|--------|----------|-------------|--------------|
+| GET | `/api/carts/:cid` | Ver carrito | Usuario |
+| POST | `/api/carts/:cid/products/:pid` | Agregar producto | Usuario |
+| DELETE | `/api/carts/:cid/products/:pid` | Eliminar producto | Usuario |
+| DELETE | `/api/carts/:cid` | Limpiar carrito | Usuario |
+| POST | `/api/carts/:cid/purchase` | Procesar compra | Usuario |
+| GET | `/api/carts/tickets/user` | Mis tickets | Usuario |
+| GET | `/api/carts/tickets/:code` | Ver ticket | Usuario |
+| GET | `/api/carts/tickets` | Todos los tickets | Admin |
 
+## 📧 Sistema de Emails
+
+### Tipos de Email
+
+1. **Bienvenida**: Al registrar usuario
+2. **Reset de contraseña**: Con enlace seguro
+3. **Confirmación de compra**: Con detalles del ticket
+
+### Configuración
+
+Requiere configurar las variables de entorno para Gmail:
+
+```env
+EMAIL_USER=tu_email@gmail.com
+EMAIL_PASSWORD=tu_password_de_aplicacion
 ```
+
+## 🔒 Autorización por Roles
+
+### Administrador (`admin`)
+- Gestión completa de usuarios
+- CRUD completo de productos
+- Visualización de todos los tickets
+- Acceso a estadísticas del sistema
+
+### Usuario (`user`)
+- Gestión de su propio perfil
+- Agregar productos al carrito
+- Procesar compras
+- Ver sus propios tickets
+
+## 🧪 Ejemplos de Uso
+
+### Registro de Usuario
+
+```bash
 POST /api/users
 Content-Type: application/json
 
@@ -145,7 +278,7 @@ Content-Type: application/json
 
 ### Login
 
-```
+```bash
 POST /api/sessions/login
 Content-Type: application/json
 
@@ -155,46 +288,67 @@ Content-Type: application/json
 }
 ```
 
-Respuesta de ejemplo:
-```json
-{
-  "status": "success",
-  "data": {
-    "user": {
-      "id": "60d21b4667d0d8992e610c85",
-      "first_name": "Juan",
-      "last_name": "Pérez",
-      "email": "juan@example.com",
-      "role": "user"
-    },
-    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-  }
-}
-```
+### Agregar Producto al Carrito
 
-### Acceder a Ruta Protegida
-
-```
-GET /api/sessions/current
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-```
-
-### Crear un Producto (solo admin)
-
-```
-POST /api/products
+```bash
+POST /api/carts/60d21b4667d0d8992e610c85/products/60d21b4667d0d8992e610c86
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 Content-Type: application/json
 
 {
-  "title": "Producto de ejemplo",
-  "description": "Descripción del producto",
-  "price": 999.99,
-  "stock": 100,
-  "category": "Electrónica"
+  "quantity": 2
 }
 ```
 
-## Licencia
+### Procesar Compra
+
+```bash
+POST /api/carts/60d21b4667d0d8992e610c85/purchase
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```
+
+### Solicitar Reset de Contraseña
+
+```bash
+POST /api/sessions/forgot-password
+Content-Type: application/json
+
+{
+  "email": "juan@example.com"
+}
+```
+
+## 🚀 Mejoras Implementadas
+
+### Arquitectura
+- ✅ Repository Pattern para separación de capas
+- ✅ DAOs para acceso a datos
+- ✅ DTOs para transferencia segura
+- ✅ Services para lógica de negocio
+
+### Seguridad
+- ✅ Middleware de autorización específico
+- ✅ Estrategia "current" de Passport
+- ✅ Validación de propietario de recursos
+- ✅ Tokens seguros para reset de contraseña
+
+### Funcionalidad
+- ✅ Sistema completo de carrito
+- ✅ Procesamiento de compras con verificación de stock
+- ✅ Generación automática de tickets
+- ✅ Sistema de emails transaccionales
+- ✅ Manejo de compras parciales
+
+### Experiencia de Usuario
+- ✅ Emails HTML profesionales
+- ✅ Mensajes de error descriptivos
+- ✅ Respuestas consistentes de la API
+- ✅ Documentación completa
+
+## 📝 Licencia
 
 MIT
+
+---
+
+**Desarrollado con ❤️ usando Node.js, Express, MongoDB y las mejores prácticas de desarrollo backend.**

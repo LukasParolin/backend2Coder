@@ -1,17 +1,18 @@
 const express = require('express');
 const router = express.Router();
 const userController = require('../controllers/user.controller');
-const { authenticateJWT, authorizeAdmin, authorizeUser } = require('../middlewares/auth.middleware');
+const { authorizeAdmin, authorizeOwnerOrAdmin } = require('../middlewares/auth.middleware');
+const { validateUserData, validateMongoId } = require('../middlewares/validation.middleware');
 
 // Rutas públicas
-router.post('/', userController.createUser);
+router.post('/', validateUserData, userController.createUser);
 
 // Rutas protegidas solo para administradores
-router.get('/', authenticateJWT, authorizeAdmin, userController.getAllUsers);
-router.delete('/:id', authenticateJWT, authorizeAdmin, userController.deleteUser);
+router.get('/', authorizeAdmin, userController.getAllUsers);
+router.delete('/:id', authorizeAdmin, validateMongoId('id'), userController.deleteUser);
 
-// Rutas protegidas para usuarios autenticados
-router.get('/:id', authenticateJWT, authorizeUser, userController.getUserById);
-router.put('/:id', authenticateJWT, authorizeUser, userController.updateUser);
+// Rutas protegidas para el propietario o administrador
+router.get('/:id', authorizeOwnerOrAdmin, validateMongoId('id'), userController.getUserById);
+router.put('/:id', authorizeOwnerOrAdmin, validateMongoId('id'), userController.updateUser);
 
 module.exports = router; 

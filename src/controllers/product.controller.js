@@ -1,115 +1,125 @@
-const Product = require('../models/product.model');
+const ProductRepository = require('../repositories/product.repository');
+const Validators = require('../utils/validators');
 const { AppError } = require('../middlewares/errorHandler');
 
-// Obtener todos los productos
-const getAllProducts = async (req, res, next) => {
-  try {
-    const products = await Product.find();
-    
-    res.status(200).json({
-      status: 'success',
-      data: {
-        products
-      }
-    });
-  } catch (error) {
-    next(error);
+class ProductController {
+  constructor() {
+    this.productRepository = new ProductRepository();
   }
-};
 
-// Obtener un producto por ID
-const getProductById = async (req, res, next) => {
-  try {
-    const product = await Product.findById(req.params.id);
-    
-    if (!product) {
-      return next(new AppError('Producto no encontrado', 404));
+  // Obtener todos los productos
+  async getAllProducts(req, res, next) {
+    try {
+      const products = await this.productRepository.getAllProducts();
+      
+      res.status(200).json({
+        status: 'success',
+        data: {
+          products
+        }
+      });
+    } catch (error) {
+      next(error);
     }
-    
-    res.status(200).json({
-      status: 'success',
-      data: {
-        product
-      }
-    });
-  } catch (error) {
-    next(error);
   }
-};
 
-// Crear un nuevo producto
-const createProduct = async (req, res, next) => {
-  try {
-    const { title, description, price, stock, category, image } = req.body;
-    
-    const newProduct = await Product.create({
-      title,
-      description,
-      price,
-      stock,
-      category,
-      image
-    });
-    
-    res.status(201).json({
-      status: 'success',
-      data: {
-        product: newProduct
-      }
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-// Actualizar un producto
-const updateProduct = async (req, res, next) => {
-  try {
-    const { title, description, price, stock, category, image } = req.body;
-    
-    const updatedProduct = await Product.findByIdAndUpdate(
-      req.params.id,
-      { title, description, price, stock, category, image },
-      { new: true, runValidators: true }
-    );
-    
-    if (!updatedProduct) {
-      return next(new AppError('Producto no encontrado', 404));
+  // Obtener un producto por ID
+  async getProductById(req, res, next) {
+    try {
+      const product = await this.productRepository.getProductById(req.params.id);
+      
+      res.status(200).json({
+        status: 'success',
+        data: {
+          product
+        }
+      });
+    } catch (error) {
+      next(error);
     }
-    
-    res.status(200).json({
-      status: 'success',
-      data: {
-        product: updatedProduct
-      }
-    });
-  } catch (error) {
-    next(error);
   }
-};
 
-// Eliminar un producto
-const deleteProduct = async (req, res, next) => {
-  try {
-    const product = await Product.findByIdAndDelete(req.params.id);
-    
-    if (!product) {
-      return next(new AppError('Producto no encontrado', 404));
+  // Crear un nuevo producto (solo admin)
+  async createProduct(req, res, next) {
+    try {
+      const productData = req.body;
+      
+      // Validar datos de entrada
+      const validationErrors = Validators.validateProductData(productData);
+      if (validationErrors.length > 0) {
+        return next(new AppError(`Errores de validación: ${validationErrors.join(', ')}`, 400));
+      }
+      
+      const newProduct = await this.productRepository.createProduct(productData);
+      
+      res.status(201).json({
+        status: 'success',
+        data: {
+          product: newProduct
+        }
+      });
+    } catch (error) {
+      next(error);
     }
-    
-    res.status(200).json({
-      status: 'success',
-      message: 'Producto eliminado correctamente'
-    });
-  } catch (error) {
-    next(error);
   }
-};
+
+  // Actualizar un producto (solo admin)
+  async updateProduct(req, res, next) {
+    try {
+      const updateData = req.body;
+      const updatedProduct = await this.productRepository.updateProduct(req.params.id, updateData);
+      
+      res.status(200).json({
+        status: 'success',
+        data: {
+          product: updatedProduct
+        }
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // Eliminar un producto (solo admin)
+  async deleteProduct(req, res, next) {
+    try {
+      const result = await this.productRepository.deleteProduct(req.params.id);
+      
+      res.status(200).json({
+        status: 'success',
+        data: result
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // Obtener productos por categoría
+  async getProductsByCategory(req, res, next) {
+    try {
+      const { category } = req.params;
+      const products = await this.productRepository.getProductsByCategory(category);
+      
+      res.status(200).json({
+        status: 'success',
+        data: {
+          products
+        }
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+}
+
+// Crear instancia del controlador
+const productController = new ProductController();
 
 module.exports = {
-  getAllProducts,
-  getProductById,
-  createProduct,
-  updateProduct,
-  deleteProduct
+  getAllProducts: productController.getAllProducts.bind(productController),
+  getProductById: productController.getProductById.bind(productController),
+  createProduct: productController.createProduct.bind(productController),
+  updateProduct: productController.updateProduct.bind(productController),
+  deleteProduct: productController.deleteProduct.bind(productController),
+  getProductsByCategory: productController.getProductsByCategory.bind(productController)
 }; 
