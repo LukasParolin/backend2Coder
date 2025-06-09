@@ -1,4 +1,5 @@
 const User = require('../models/user.model');
+const DatabaseCheck = require('../utils/database-check');
 
 class UserDAO {
   async findAll() {
@@ -35,6 +36,7 @@ class UserDAO {
 
   async findByEmailWithPassword(email) {
     try {
+      DatabaseCheck.throwIfNotConnected('buscar usuario por email con contraseña');
       return await User.findOne({ email }).select('+password');
     } catch (error) {
       throw new Error(`Error al obtener usuario por email con contraseña: ${error.message}`);

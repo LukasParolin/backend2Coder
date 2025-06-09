@@ -1,6 +1,8 @@
 const ProductRepository = require('../repositories/product.repository');
 const Validators = require('../utils/validators');
 const { AppError } = require('../middlewares/errorHandler');
+const DatabaseCheck = require('../utils/database-check');
+const DemoData = require('../utils/demo-data');
 
 class ProductController {
   constructor() {
@@ -10,15 +12,36 @@ class ProductController {
   // Obtener todos los productos
   async getAllProducts(req, res, next) {
     try {
-      const products = await this.productRepository.getAllProducts();
+      let products;
+      let mode = 'database';
+      
+      if (!DatabaseCheck.isConnected()) {
+        products = DemoData.getProducts();
+        mode = 'demo';
+      } else {
+        products = await this.productRepository.getAllProducts();
+      }
       
       res.status(200).json({
         status: 'success',
+        mode,
         data: {
           products
         }
       });
     } catch (error) {
+      // Si falla la base de datos, usar datos de demostración
+      if (error.message.includes('Base de datos no disponible')) {
+        const products = DemoData.getProducts();
+        return res.status(200).json({
+          status: 'success',
+          mode: 'demo',
+          message: 'Usando datos de demostración - Base de datos no disponible',
+          data: {
+            products
+          }
+        });
+      }
       next(error);
     }
   }

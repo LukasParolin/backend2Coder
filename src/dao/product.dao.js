@@ -1,8 +1,10 @@
 const Product = require('../models/product.model');
+const DatabaseCheck = require('../utils/database-check');
 
 class ProductDAO {
   async findAll() {
     try {
+      DatabaseCheck.throwIfNotConnected('obtener lista de productos');
       return await Product.find();
     } catch (error) {
       throw new Error(`Error al obtener productos: ${error.message}`);

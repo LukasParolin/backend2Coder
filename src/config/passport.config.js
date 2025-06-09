@@ -4,6 +4,8 @@ const JwtStrategy = require('passport-jwt').Strategy;
 const ExtractJwt = require('passport-jwt').ExtractJwt;
 const UserRepository = require('../repositories/user.repository');
 const { AppError } = require('../middlewares/errorHandler');
+const DatabaseCheck = require('../utils/database-check');
+const DemoData = require('../utils/demo-data');
 
 const initializePassport = () => {
   const userRepository = new UserRepository();
@@ -18,8 +20,25 @@ const initializePassport = () => {
       },
       async (email, password, done) => {
         try {
+          let user;
+          
+          // Si no hay conexión a la base de datos, usar datos de demostración
+          if (!DatabaseCheck.isConnected()) {
+            const demoUser = DemoData.getUser();
+            if (email === demoUser.email) {
+              const isValid = await demoUser.isValidPassword(password);
+              if (isValid) {
+                const userWithoutPassword = { ...demoUser };
+                delete userWithoutPassword.password;
+                delete userWithoutPassword.isValidPassword;
+                return done(null, userWithoutPassword);
+              }
+            }
+            return done(new AppError('Usuario no encontrado en modo demostración', 404), false);
+          }
+
           // Buscar el usuario por email y traer la contraseña
-          const user = await userRepository.getUserForLogin(email);
+          user = await userRepository.getUserForLogin(email);
 
           if (!user) {
             return done(new AppError('Usuario no encontrado', 404), false);
@@ -35,6 +54,20 @@ const initializePassport = () => {
           user.password = undefined;
           return done(null, user);
         } catch (error) {
+          // Si hay error de base de datos, intentar con datos de demostración
+          if (error.message.includes('Base de datos no disponible')) {
+            const demoUser = DemoData.getUser();
+            if (email === demoUser.email) {
+              const isValid = await demoUser.isValidPassword(password);
+              if (isValid) {
+                const userWithoutPassword = { ...demoUser };
+                delete userWithoutPassword.password;
+                delete userWithoutPassword.isValidPassword;
+                return done(null, userWithoutPassword);
+              }
+            }
+            return done(new AppError('Usuario no encontrado en modo demostración', 404), false);
+          }
           return done(error);
         }
       }
@@ -51,7 +84,21 @@ const initializePassport = () => {
     'jwt',
     new JwtStrategy(jwtOptions, async (jwtPayload, done) => {
       try {
-        const user = await userRepository.getUserById(jwtPayload.id);
+        let user;
+        
+        // Si no hay conexión a la base de datos, usar datos de demostración
+        if (!DatabaseCheck.isConnected()) {
+          const demoUser = DemoData.getUser();
+          if (jwtPayload.id === demoUser._id) {
+            const userWithoutPassword = { ...demoUser };
+            delete userWithoutPassword.password;
+            delete userWithoutPassword.isValidPassword;
+            return done(null, userWithoutPassword);
+          }
+          return done(null, false);
+        }
+
+        user = await userRepository.getUserById(jwtPayload.id);
 
         if (!user) {
           return done(null, false);
@@ -59,6 +106,16 @@ const initializePassport = () => {
 
         return done(null, user);
       } catch (error) {
+        // Si hay error de base de datos, intentar con datos de demostración
+        if (error.message.includes('Base de datos no disponible')) {
+          const demoUser = DemoData.getUser();
+          if (jwtPayload.id === demoUser._id) {
+            const userWithoutPassword = { ...demoUser };
+            delete userWithoutPassword.password;
+            delete userWithoutPassword.isValidPassword;
+            return done(null, userWithoutPassword);
+          }
+        }
         return done(error, false);
       }
     })
@@ -69,7 +126,21 @@ const initializePassport = () => {
     'current',
     new JwtStrategy(jwtOptions, async (jwtPayload, done) => {
       try {
-        const user = await userRepository.getUserById(jwtPayload.id);
+        let user;
+        
+        // Si no hay conexión a la base de datos, usar datos de demostración
+        if (!DatabaseCheck.isConnected()) {
+          const demoUser = DemoData.getUser();
+          if (jwtPayload.id === demoUser._id) {
+            const userWithoutPassword = { ...demoUser };
+            delete userWithoutPassword.password;
+            delete userWithoutPassword.isValidPassword;
+            return done(null, userWithoutPassword);
+          }
+          return done(null, false);
+        }
+
+        user = await userRepository.getUserById(jwtPayload.id);
 
         if (!user) {
           return done(null, false);
@@ -77,6 +148,16 @@ const initializePassport = () => {
 
         return done(null, user);
       } catch (error) {
+        // Si hay error de base de datos, intentar con datos de demostración
+        if (error.message.includes('Base de datos no disponible')) {
+          const demoUser = DemoData.getUser();
+          if (jwtPayload.id === demoUser._id) {
+            const userWithoutPassword = { ...demoUser };
+            delete userWithoutPassword.password;
+            delete userWithoutPassword.isValidPassword;
+            return done(null, userWithoutPassword);
+          }
+        }
         return done(error, false);
       }
     })
