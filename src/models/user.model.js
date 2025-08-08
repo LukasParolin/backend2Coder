@@ -38,6 +38,7 @@ const userSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Cart'
   },
+  pets: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Pet', default: [] }],
   role: {
     type: String,
     enum: ['user', 'admin'],

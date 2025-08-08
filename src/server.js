@@ -13,6 +13,8 @@ const userRoutes = require('./routes/user.routes');
 const sessionRoutes = require('./routes/session.routes');
 const productRoutes = require('./routes/product.routes');
 const cartRoutes = require('./routes/cart.routes');
+const mocksRouter = require('./routes/mocks.router');
+const petRoutes = require('./routes/pet.routes');
 
 const app = express();
 const PORT = process.env.PORT || 8080;
@@ -34,6 +36,8 @@ app.use('/api/users', userRoutes);
 app.use('/api/sessions', sessionRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/carts', cartRoutes);
+app.use('/api/mocks', mocksRouter);
+app.use('/api/pets', petRoutes);
 
 // Ruta principal
 app.get('/', (req, res) => {

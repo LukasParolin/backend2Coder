@@ -7,6 +7,7 @@ class UserDTO {
     this.age = user.age;
     this.role = user.role;
     this.cart = user.cart;
+  this.pets = user.pets || [];
   }
 
   static fromUser(user) {

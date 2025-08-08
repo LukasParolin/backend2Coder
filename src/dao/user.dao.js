@@ -4,7 +4,7 @@ const DatabaseCheck = require('../utils/database-check');
 class UserDAO {
   async findAll() {
     try {
-      return await User.find().select('-password');
+  return await User.find().select('-password').populate('pets');
     } catch (error) {
       throw new Error(`Error al obtener usuarios: ${error.message}`);
     }
@@ -12,7 +12,7 @@ class UserDAO {
 
   async findById(id) {
     try {
-      return await User.findById(id).select('-password');
+  return await User.findById(id).select('-password').populate('pets');
     } catch (error) {
       throw new Error(`Error al obtener usuario por ID: ${error.message}`);
     }
@@ -28,7 +28,7 @@ class UserDAO {
 
   async findByEmail(email) {
     try {
-      return await User.findOne({ email }).select('-password');
+  return await User.findOne({ email }).select('-password').populate('pets');
     } catch (error) {
       throw new Error(`Error al obtener usuario por email: ${error.message}`);
     }

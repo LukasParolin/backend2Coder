@@ -248,12 +248,14 @@ EMAIL_PASSWORD=tu_password_de_aplicacion
 ## 🔒 Autorización por Roles
 
 ### Administrador (`admin`)
+
 - Gestión completa de usuarios
 - CRUD completo de productos
 - Visualización de todos los tickets
 - Acceso a estadísticas del sistema
 
 ### Usuario (`user`)
+
 - Gestión de su propio perfil
 - Agregar productos al carrito
 - Procesar compras
@@ -321,18 +323,21 @@ Content-Type: application/json
 ## 🚀 Mejoras Implementadas
 
 ### Arquitectura
+
 - ✅ Repository Pattern para separación de capas
 - ✅ DAOs para acceso a datos
 - ✅ DTOs para transferencia segura
 - ✅ Services para lógica de negocio
 
 ### Seguridad
+
 - ✅ Middleware de autorización específico
 - ✅ Estrategia "current" de Passport
 - ✅ Validación de propietario de recursos
 - ✅ Tokens seguros para reset de contraseña
 
 ### Funcionalidad
+
 - ✅ Sistema completo de carrito
 - ✅ Procesamiento de compras con verificación de stock
 - ✅ Generación automática de tickets
@@ -340,6 +345,7 @@ Content-Type: application/json
 - ✅ Manejo de compras parciales
 
 ### Experiencia de Usuario
+
 - ✅ Emails HTML profesionales
 - ✅ Mensajes de error descriptivos
 - ✅ Respuestas consistentes de la API
@@ -352,3 +358,49 @@ MIT
 ---
 
 **Desarrollado con ❤️ usando Node.js, Express, MongoDB y las mejores prácticas de desarrollo backend.**
+
+## 🧪 Datos Mock y Generación Masiva
+
+Se añadió un router específico para aislar toda la lógica de mocking bajo la ruta base `/api/mocks`.
+
+### Endpoints
+
+| Método | Endpoint | Descripción |
+|--------|----------|-------------|
+| GET | `/api/mocks/mockingpets` | 50 mascotas fake (no persistidas) |
+| GET | `/api/mocks/mockingusers?quantity=Q` | Q (default 50) usuarios mock con password encriptada |
+| POST | `/api/mocks/generateData` | Inserta en la BD usuarios y mascotas (body: `{ "users": number, "pets": number }`) |
+
+### Formato de Usuarios Mock
+
+Los usuarios generados incluyen:
+
+- `_id` simulado estilo Mongo
+- `first_name`, `last_name`, `email` aleatorios
+- `password` = hash de `coder123`
+- `role` alternando entre `user` y `admin`
+- `pets` array vacío (campo agregado al modelo real para consistencia)
+
+### Decisiones de Diseño
+
+- Se reutiliza un único hash de la contraseña para evitar recomputar bcrypt en cada iteración.
+- No se generan carritos ni se envían emails en `/generateData` para mantener el proceso rápido y predecible.
+- Se prefirió un bucle `for` sobre `insertMany` para usuarios a fin de conservar la posibilidad de hooks/validaciones por documento (trade-off de simplicidad vs performance; ajustable si hiciera falta volumen muy alto).
+
+### Ejemplo de Inserción Masiva
+
+```bash
+POST /api/mocks/generateData
+Content-Type: application/json
+
+{
+  "users": 10,
+  "pets": 25
+}
+```
+
+Luego verificar:
+
+- `GET /api/pets` (público) para mascotas
+- `GET /api/users` (requiere admin) para usuarios
+
