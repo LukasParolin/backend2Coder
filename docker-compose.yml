@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  # Aplicación Node.js
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      NODE_ENV: production
+      PORT: 8080
+      MONGODB_URI: mongodb://mongo:27017/ecommerce
+      JWT_SECRET: mi_super_secreto_jwt_para_produccion_2024
+      JWT_EXPIRES_IN: 24h
+    depends_on:
+      - mongo
+    volumes:
+      - ./logs:/usr/src/app/logs
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  # Base de datos MongoDB
+  mongo:
+    image: mongo:7.0
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: ecommerce
+    volumes:
+      - mongo_data:/data/db
+      - ./scripts/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  # Interfaz web para MongoDB (opcional)
+  mongo-express:
+    image: mongo-express:1.0.0
+    ports:
+      - "8081:8081"
+    environment:
+      ME_CONFIG_MONGODB_URL: mongodb://mongo:27017/ecommerce
+      ME_CONFIG_BASICAUTH_USERNAME: admin
+      ME_CONFIG_BASICAUTH_PASSWORD: admin123
+    depends_on:
+      - mongo
+    restart: unless-stopped
+    networks:
+      - app-network
+
+volumes:
+  mongo_data:
+
+networks:
+  app-network:
+    driver: bridge

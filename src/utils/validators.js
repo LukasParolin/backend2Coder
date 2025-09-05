@@ -91,6 +91,30 @@ class Validators {
 
     return errors;
   }
+
+  static validatePetData(petData) {
+    const errors = [];
+
+    if (!petData.name || !petData.name.trim()) {
+      errors.push('El nombre de la mascota es requerido');
+    }
+
+    if (!petData.specie || !petData.specie.trim()) {
+      errors.push('La especie es requerida');
+    }
+
+    if (!petData.age || !Number.isInteger(petData.age) || petData.age < 0) {
+      errors.push('La edad debe ser un número entero mayor o igual a 0');
+    }
+
+    // Validar especies permitidas
+    const allowedSpecies = ['dog', 'cat', 'bird', 'hamster', 'fish', 'rabbit', 'other'];
+    if (petData.specie && !allowedSpecies.includes(petData.specie.toLowerCase())) {
+      errors.push(`Especie debe ser una de: ${allowedSpecies.join(', ')}`);
+    }
+
+    return errors;
+  }
 }
 
 module.exports = Validators; 

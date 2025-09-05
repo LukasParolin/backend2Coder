@@ -27,6 +27,19 @@ const validateProductData = (req, res, next) => {
   }
 };
 
+// Middleware para validar datos de mascota
+const validatePetData = (req, res, next) => {
+  try {
+    const validationErrors = Validators.validatePetData(req.body);
+    if (validationErrors.length > 0) {
+      return next(new AppError(`Errores de validación: ${validationErrors.join(', ')}`, 400));
+    }
+    next();
+  } catch (error) {
+    next(error);
+  }
+};
+
 // Middleware para validar email
 const validateEmail = (req, res, next) => {
   try {
@@ -85,6 +98,7 @@ const validateMongoId = (paramName) => {
 module.exports = {
   validateUserData,
   validateProductData,
+  validatePetData,
   validateEmail,
   validatePassword,
   validateQuantity,

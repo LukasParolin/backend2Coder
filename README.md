@@ -1,6 +1,6 @@
 # API de Ecommerce con Arquitectura Profesional
 
-API Backend completa para un sistema de ecommerce con autenticación JWT, sistema de roles, carrito de compras, procesamiento de tickets y arquitectura basada en patrones de diseño profesionales.
+API Backend completa para un sistema de ecommerce con autenticación JWT, sistema de roles, carrito de compras, procesamiento de tickets, adopción de mascotas y arquitectura basada en patrones de diseño profesionales.
 
 ## 🚀 Características Principales
 
@@ -8,9 +8,89 @@ API Backend completa para un sistema de ecommerce con autenticación JWT, sistem
 - **Recuperación de Contraseña**: Sistema completo con envío de emails
 - **Carrito de Compras**: Gestión completa con verificación de stock
 - **Sistema de Tickets**: Procesamiento de compras con generación automática
+- **Sistema de Adopciones**: Gestión completa de adopción de mascotas
 - **Arquitectura Profesional**: Repository Pattern, DAOs, DTOs y Services
 - **Seguridad Avanzada**: Middleware de autorización específico por rol
 - **Notificaciones por Email**: Sistema completo de mailing
+- **Documentación API**: Swagger/OpenAPI integrado
+- **Tests Funcionales**: Cobertura completa con Mocha y Chai
+- **Containerización**: Docker y Docker Compose incluidos
+
+## 🐳 Docker y Containerización
+
+### Imagen de DockerHub
+
+La imagen oficial del proyecto está disponible en DockerHub:
+
+**🔗 [lukasparolin/backend2coder-ecommerce:latest](https://hub.docker.com/r/lukasparolin/backend2coder-ecommerce)**
+
+### Ejecutar con Docker
+
+#### Opción 1: Usar imagen de DockerHub (Recomendado)
+
+```bash
+# Ejecutar solo la aplicación (requiere MongoDB local)
+docker run -d \
+  --name ecommerce-api \
+  -p 8080:8080 \
+  -e MONGODB_URI=mongodb://host.docker.internal:27017/ecommerce \
+  -e JWT_SECRET=mi_super_secreto_jwt_2024 \
+  lukasparolin/backend2coder-ecommerce:latest
+
+# Acceder a la aplicación
+curl http://localhost:8080
+```
+
+#### Opción 2: Docker Compose (Aplicación + MongoDB)
+
+```bash
+# Clonar el repositorio
+git clone <repository-url>
+cd Backend2Coder
+
+# Ejecutar con docker-compose
+docker-compose up -d
+
+# Ver logs
+docker-compose logs -f
+
+# Detener servicios
+docker-compose down
+```
+
+#### Opción 3: Construir imagen localmente
+
+```bash
+# Construir la imagen
+docker build -t backend2coder-ecommerce:local .
+
+# Ejecutar
+docker run -d \
+  --name ecommerce-api-local \
+  -p 8080:8080 \
+  -e MONGODB_URI=mongodb://host.docker.internal:27017/ecommerce \
+  -e JWT_SECRET=mi_super_secreto_jwt_2024 \
+  backend2coder-ecommerce:local
+```
+
+### Servicios Incluidos
+
+| Servicio | Puerto | Descripción |
+|----------|--------|-------------|
+| API Principal | 8080 | Aplicación Node.js |
+| MongoDB | 27017 | Base de datos |
+| Mongo Express | 8081 | Interfaz web para MongoDB |
+| Swagger Docs | 8080/api-docs | Documentación de la API |
+
+### Variables de Entorno Docker
+
+```env
+NODE_ENV=production
+PORT=8080
+MONGODB_URI=mongodb://mongo:27017/ecommerce
+JWT_SECRET=mi_super_secreto_jwt_para_produccion_2024
+JWT_EXPIRES_IN=24h
+```
 
 ## 📋 Requisitos
 
@@ -58,6 +138,91 @@ npm run dev
 
 # Modo producción
 npm start
+```
+
+## 🧪 Testing
+
+### Ejecutar Tests
+
+```bash
+# Ejecutar todos los tests
+npm test
+
+# Ejecutar tests en modo watch
+npm run test:watch
+```
+
+### Cobertura de Tests
+
+- ✅ **Adoption Router**: Tests funcionales completos
+  - GET `/api/adoptions/adoptions` - Obtener todas las adopciones
+  - GET `/api/adoptions/adoptions/:aid` - Obtener adopción por ID
+  - POST `/api/adoptions/:uid/:pid` - Adoptar mascota
+  - POST `/api/adoptions/pets` - Crear mascota para adopción
+- ✅ **Casos de Error**: Validación de errores 400, 401, 403, 404
+- ✅ **Autenticación**: Tests con tokens JWT
+- ✅ **Autorización**: Tests de roles (user/admin)
+- ✅ **Flujo Completo**: Tests de integración end-to-end
+
+### Configuración de Tests
+
+Los tests utilizan una base de datos separada y se ejecutan con:
+- **Mocha**: Framework de testing
+- **Chai**: Librería de aserciones
+- **Supertest**: Tests HTTP
+
+## 📚 Documentación API (Swagger)
+
+### Acceso a la Documentación
+
+Una vez que el servidor esté ejecutándose, la documentación Swagger estará disponible en:
+
+**🔗 [http://localhost:8080/api-docs](http://localhost:8080/api-docs)**
+
+### Módulos Documentados
+
+- ✅ **Users**: Documentación completa con Swagger
+  - Esquemas de datos (User, UserCreate, UserUpdate)
+  - Respuestas de error y éxito
+  - Autenticación y autorización
+  - Ejemplos de uso
+
+### Características de la Documentación
+
+- **OpenAPI 3.0**: Estándar moderno de documentación
+- **Interfaz Interactiva**: Probar endpoints directamente
+- **Autenticación JWT**: Soporte para tokens Bearer
+- **Esquemas de Validación**: Modelos de datos completos
+- **Ejemplos de Respuesta**: Para todos los endpoints
+
+## 🐾 Sistema de Adopciones
+
+### Endpoints de Adopción
+
+| Método | Endpoint | Descripción | Autorización |
+|--------|----------|-------------|--------------|
+| GET | `/api/adoptions/adoptions` | Listar adopciones | Público |
+| GET | `/api/adoptions/adoptions/:aid` | Ver adopción específica | Público |
+| POST | `/api/adoptions/:uid/:pid` | Adoptar mascota | Usuario |
+| POST | `/api/adoptions/pets` | Crear mascota | Admin |
+
+### Flujo de Adopción
+
+1. **Admin crea mascota**: POST `/api/adoptions/pets`
+2. **Usuario adopta**: POST `/api/adoptions/:uid/:pid`
+3. **Verificación**: La mascota se marca como adoptada
+4. **Relación**: Se establece relación usuario-mascota
+
+### Modelo de Mascota
+
+```javascript
+{
+  name: String,        // Nombre de la mascota
+  specie: String,      // Especie (dog, cat, bird, etc.)
+  age: Number,         // Edad en años
+  adopted: Boolean,    // Estado de adopción
+  owner: ObjectId      // ID del usuario que adoptó
+}
 ```
 
 ## 🏗️ Arquitectura del Proyecto
@@ -227,6 +392,21 @@ const result = await purchaseService.processPurchase(cartId, email);
 | GET | `/api/carts/tickets/user` | Mis tickets | Usuario |
 | GET | `/api/carts/tickets/:code` | Ver ticket | Usuario |
 | GET | `/api/carts/tickets` | Todos los tickets | Admin |
+
+### Adopciones
+
+| Método | Endpoint | Descripción | Autorización |
+|--------|----------|-------------|--------------|
+| GET | `/api/adoptions/adoptions` | Listar adopciones | Público |
+| GET | `/api/adoptions/adoptions/:aid` | Ver adopción específica | Público |
+| POST | `/api/adoptions/:uid/:pid` | Adoptar mascota | Usuario |
+| POST | `/api/adoptions/pets` | Crear mascota | Admin |
+
+### Mascotas
+
+| Método | Endpoint | Descripción | Autorización |
+|--------|----------|-------------|--------------|
+| GET | `/api/pets` | Listar mascotas | Público |
 
 ## 📧 Sistema de Emails
 
@@ -403,4 +583,100 @@ Luego verificar:
 
 - `GET /api/pets` (público) para mascotas
 - `GET /api/users` (requiere admin) para usuarios
+
+## 🚀 Mejoras Implementadas (v2.0)
+
+### 🐳 Dockerización Completa
+
+- ✅ **Dockerfile optimizado** con imagen Alpine y usuario no-root
+- ✅ **Docker Compose** para desarrollo completo (App + MongoDB + Mongo Express)
+- ✅ **Imagen en DockerHub**: `lukasparolin/backend2coder-ecommerce:latest`
+- ✅ **Scripts automatizados** para build y deploy
+- ✅ **Health checks** integrados para monitoreo
+- ✅ **Optimización de imagen** con .dockerignore
+
+### 📚 Documentación y Testing
+
+- ✅ **Swagger/OpenAPI 3.0** integrado en `/api-docs`
+- ✅ **Documentación completa del módulo Users**
+- ✅ **Tests funcionales completos** para adoption router
+- ✅ **Framework de testing** con Mocha, Chai y Supertest
+- ✅ **Cobertura de casos de error** y autenticación
+
+### 🐾 Sistema de Adopciones
+
+- ✅ **Router de adopciones** completamente funcional
+- ✅ **CRUD de mascotas** para adopción
+- ✅ **Gestión de relaciones** usuario-mascota
+- ✅ **Validaciones y autorización** por roles
+- ✅ **Endpoints RESTful** siguiendo mejores prácticas
+
+### 🔧 Mejoras Técnicas
+
+- ✅ **Separación de entornos** (development, test, production)
+- ✅ **Configuración modular** de Swagger
+- ✅ **Middleware de validación** mejorado
+- ✅ **Manejo de errores** unificado
+- ✅ **Logging estructurado** para producción
+
+## 📋 Instrucciones de Despliegue
+
+### Para Desarrollo Local
+
+```bash
+# 1. Clonar repositorio
+git clone <repository-url>
+cd Backend2Coder
+
+# 2. Configurar entorno
+cp .env.example .env
+# Editar .env con tus configuraciones
+
+# 3. Instalar dependencias
+npm install
+
+# 4. Ejecutar en desarrollo
+npm run dev
+```
+
+### Para Producción con Docker
+
+```bash
+# Opción 1: Usar imagen de DockerHub
+docker run -d \
+  --name ecommerce-api \
+  -p 8080:8080 \
+  -e MONGODB_URI=mongodb://your-mongo-host:27017/ecommerce \
+  -e JWT_SECRET=your-super-secret-jwt-key \
+  lukasparolin/backend2coder-ecommerce:latest
+
+# Opción 2: Docker Compose (recomendado)
+docker-compose up -d
+```
+
+### Para Testing
+
+```bash
+# Ejecutar tests localmente
+npm test
+
+# Ejecutar tests en Docker
+docker run --rm \
+  -e NODE_ENV=test \
+  lukasparolin/backend2coder-ecommerce:latest npm test
+```
+
+## 🔗 Enlaces Importantes
+
+- **🐳 Imagen Docker**: [lukasparolin/backend2coder-ecommerce](https://hub.docker.com/r/lukasparolin/backend2coder-ecommerce)
+- **📚 Documentación API**: http://localhost:8080/api-docs (cuando esté ejecutándose)
+- **🗂️ Repositorio**: [GitHub](https://github.com/LukasParolin/backend2Coder)
+
+## 📝 Licencia
+
+MIT
+
+---
+
+**Desarrollado con ❤️ usando Node.js, Express, MongoDB, Docker y las mejores prácticas de desarrollo backend.**
 
