@@ -22,7 +22,7 @@ API Backend completa para un sistema de ecommerce con autenticación JWT, sistem
 
 La imagen oficial del proyecto está disponible en DockerHub:
 
-**🔗 [lukasparolin/backend2coder-ecommerce:latest](https://hub.docker.com/r/lukasparolin/backend2coder-ecommerce)**
+**🔗 [lukasparolin/backend2coder-ecommerce](https://hub.docker.com/r/lukasparolin/backend2coder-ecommerce)**
 
 ### Ejecutar con Docker
 
@@ -39,6 +39,9 @@ docker run -d \
 
 # Acceder a la aplicación
 curl http://localhost:8080
+
+# Ver documentación Swagger
+open http://localhost:8080/api-docs
 ```
 
 #### Opción 2: Docker Compose (Aplicación + MongoDB)
@@ -669,7 +672,7 @@ docker run --rm \
 ## 🔗 Enlaces Importantes
 
 - **🐳 Imagen Docker**: [lukasparolin/backend2coder-ecommerce](https://hub.docker.com/r/lukasparolin/backend2coder-ecommerce)
-- **📚 Documentación API**: http://localhost:8080/api-docs (cuando esté ejecutándose)
+- **📚 Documentación API**: [http://localhost:8080/api-docs](http://localhost:8080/api-docs) (cuando esté ejecutándose)
 - **🗂️ Repositorio**: [GitHub](https://github.com/LukasParolin/backend2Coder)
 
 ## 📝 Licencia
